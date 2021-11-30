@@ -86,6 +86,7 @@ class courtdate_reminder extends \core\task\scheduled_task
             foreach ($usersfirst as $user) {
                 $courtdate=$DB->get_field('user_info_data','data',array('fieldid'=>$settings->fieldid,'userid'=>$user->id));
                 $user->courtdate=userdate($courtdate,'%d.%m.%Y');
+                $user->fullname=fullname($user);
                 if ($settings->courtdate_recipient>1) {
                     $messageadm= new message_template($user,
                         new \lang_string('courtdate_first_subject','local_customnotifications',$user),

@@ -80,6 +80,6 @@ $string['confirmation_delayduration'] = 'Delay duration after account confirmati
 $string['confirmation_delayduration_help'] = 'Delay duration after account confirmation';
 $string['confirmation_recipient'] = 'Notify admin user about uncorfimed account';
 $string['confirmation_recipient_help'] = 'Notify admin user about uncorfimed account';
-$string['confirmation_subject'] = 'User {$a->fullname} is not confirmed.';
+$string['confirmation_subject'] = 'Confirmation reminder - {$a->fullname} is not confirmed.';
 $string['confirmation_message'] = 'The confirmation email was resended to user {$a->fullname},{$a->username}, {$a->email}, 
                                    which has not yet confirmed his account on moodle.';
