@@ -18,8 +18,8 @@
  * The Custom reminder event class.
  *
  * @package    local_customnotifications
- * @category   admin
- * @copyright  Lukas Celinak, Edumood s.r.o., Slovakia
+ * @category   event
+ * @copyright  Lukas Celinak, Edumood, Slovakia
  * @auther     2021 Lukas Celinak <lukascelinak@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

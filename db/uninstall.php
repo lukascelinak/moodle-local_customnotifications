@@ -17,10 +17,11 @@
 /**
  * Code that is executed before the tables and data are dropped during the plugin uninstallation.
  *
- * @package     local_customnotifications
- * @category    upgrade
- * @copyright   2021 Lukas Celinak <lukascelinak@gmail.com>
- * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    local_customnotifications
+ * @category   upgrade
+ * @copyright  Lukas Celinak, Edumood, Slovakia
+ * @auther     2021 Lukas Celinak <lukascelinak@gmail.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();

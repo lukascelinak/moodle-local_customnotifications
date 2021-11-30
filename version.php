@@ -17,15 +17,18 @@
 /**
  * Plugin version and other meta-data are defined here.
  *
- * @package     local_customnotifications
- * @copyright   2021 Lukas Celinak <lukascelinak@gmail.com>
- * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    local_customnotifications
+ * @category   admin
+ * @copyright  Lukas Celinak, Edumood, Slovakia
+ * @auther     2021 Lukas Celinak <lukascelinak@gmail.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
+/** @var object $plugin */
 $plugin->component = 'local_customnotifications';
-$plugin->release = '0.1.0';
-$plugin->version = 2021112401;
+$plugin->release = '1.0.0';
+$plugin->version = 2021113000;
 $plugin->requires = 2021051700;
-$plugin->maturity = MATURITY_ALPHA;
+$plugin->maturity = MATURITY_STABLE;

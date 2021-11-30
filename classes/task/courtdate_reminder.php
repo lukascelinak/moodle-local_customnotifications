@@ -18,8 +18,8 @@
  * The Custom notifications Courtdate reminder task class.
  *
  * @package    local_customnotifications
- * @category   admin
- * @copyright  Lukas Celinak, Edumood s.r.o., Slovakia
+ * @category   task
+ * @copyright  Lukas Celinak, Edumood, Slovakia
  * @auther     2021 Lukas Celinak <lukascelinak@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -30,6 +30,7 @@ defined('MOODLE_INTERNAL') || die();
 
 use local_customnotifications\event\reminder_sent;
 use local_customnotifications\message_template;
+require_once("$CFG->dirroot/user/profile/lib.php");
 
 /**
  * An example of a scheduled task.
@@ -54,6 +55,7 @@ class courtdate_reminder extends \core\task\scheduled_task
         global $DB,$CFG;
         $settings=get_config('local_customnotifications');
         $courses=$DB->get_records('course',array('visible'=>1));
+        $supportuser = \core_user::get_support_user();
         foreach ($courses as $course) {
             $context= \context_course::instance($course->id);
             list($relatedctxsql, $relatedctxparams) = $DB->get_in_or_equal($context->get_parent_context_ids(true), SQL_PARAMS_NAMED, 'relatedctx');
@@ -82,16 +84,30 @@ class courtdate_reminder extends \core\task\scheduled_task
             $usersfirst = $DB->get_records_sql($sqlfirst, $paramsfirst);
 
             foreach ($usersfirst as $user) {
+                $courtdate=$DB->get_field('user_info_data','data',array('fieldid'=>$settings->fieldid,'userid'=>$user->id));
+                $user->courtdate=userdate($courtdate,'%d.%m.%Y');
+                if ($settings->courtdate_recipient>1) {
+                    $messageadm= new message_template($user,
+                        new \lang_string('courtdate_first_subject','local_customnotifications',$user),
+                        new \lang_string('courtdate_first_message','local_customnotifications',$user), '',$settings->footer);
+
+                    $messageadm->set_button(new \moodle_url('/user/profile.php',array('id'=>$user->id)),fullname($user));
+                    $htmlmail=$messageadm->out();
+                    $plainmail= strip_tags($htmlmail);
+                    $copyuser = $DB->get_record('user', array('id' => $settings->courtdate_recipient));
+                    email_to_user($copyuser, $supportuser,
+                        $messageadm->get_subject(),
+                        $plainmail, $htmlmail);
+                }
+
                 $message= new message_template($user,
-                    new \lang_string('courtdate_reminder','local_customnotifications',$user),
+                    $settings->courtdate_fsubject,
                     $settings->courtdate_fmessage, $settings->footer);
 
                 $message->set_button(new \moodle_url('/course/view.php',array('id'=>$course->id)),$course->fullname);
                 $htmlmail=$message->out();
                 $plainmail= strip_tags($htmlmail);
-
-                email_to_user($user, null, $message->get_subject(), $plainmail, $htmlmail);
-
+                email_to_user($user, $supportuser, $message->get_subject(), $plainmail, $htmlmail);
                 $event = reminder_sent::create(array('objectid' => $user->id,
                     'context' => \context_user::instance($user->id), 'relateduserid' => $user->id, 'other' => "courtdate_reminder_first"));
                 $event->trigger();
@@ -121,16 +137,34 @@ class courtdate_reminder extends \core\task\scheduled_task
             $userssecond = $DB->get_records_sql($sqlfirst, $secparams);
 
             foreach ($userssecond as $user) {
+                $courtdate=$DB->get_field('user_info_data','data',array('fieldid'=>$settings->fieldid,'userid'=>$user->id));
+                $user->courtdate=userdate($courtdate,'%d.%m.%Y');
+                if ($settings->courtdate_recipient>1) {
+                    $messageadm= new message_template($user,
+                        new \lang_string('courtdate_second_subject','local_customnotifications',$user),
+                        new \lang_string('courtdate_second_message','local_customnotifications',$user),
+                        '',
+                        $settings->footer);
+
+                    $messageadm->set_button(new \moodle_url('/user/profile.php',array('id'=>$user->id)),fullname($user));
+                    $htmlmail=$messageadm->out();
+                    $plainmail= strip_tags($htmlmail);
+                    $copyuser = $DB->get_record('user', array('id' => $settings->courtdate_recipient));
+                    email_to_user($copyuser, $supportuser,
+                        $messageadm->get_subject(),
+                        $plainmail, $htmlmail);
+                }
+
                 $smessage= new message_template($user,
-                    new \lang_string('courtdate_reminder','local_customnotifications',$user),
-                    $settings->courtdate_smessage, $settings->footer);
+                    $settings->courtdate_ssubject,
+                    $settings->courtdate_smessage,
+                    '',
+                    $settings->footer);
 
                 $smessage->set_button(new \moodle_url('/course/view.php',array('id'=>$course->id)),$course->fullname);
                 $htmlmail=$smessage->out();
                 $plainmail= strip_tags($htmlmail);
-
-                email_to_user($user, null, $smessage->get_subject(), $plainmail, $htmlmail);
-
+                email_to_user($user, $supportuser, $smessage->get_subject(), $plainmail, $htmlmail);
                 $event = reminder_sent::create(array('objectid' => $user->id,
                     'context' => \context_user::instance($user->id), 'relateduserid' => $user->id, 'other' => "courtdate_reminder_second"));
                 $event->trigger();

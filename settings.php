@@ -17,10 +17,11 @@
 /**
  * Plugin administration pages are defined here.
  *
- * @package     local_customnotifications
- * @category    admin
- * @copyright   2021 Lukas Celinak <lukascelinak@gmail.com>
- * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    local_customnotifications
+ * @category   admin
+ * @copyright  Lukas Celinak, Edumood, Slovakia
+ * @auther     2021 Lukas Celinak <lukascelinak@gmail.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -41,7 +42,7 @@ if ($hassiteconfig) {
             $userselect[$user->id] = fullname($user);
         }
 
-        $extrafields = $DB->get_records('user_info_field');
+        $extrafields = $DB->get_records('user_info_field',array('type'=>'datetime'));
         $extrafieldsarray = [];
         foreach ($extrafields as $field) {
             $extrafieldsarray[$field->id] = $field->name;

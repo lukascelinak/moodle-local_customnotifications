@@ -1,8 +1,10 @@
-# Customnotifications #
+# Custom notifications #
 
-TODO Describe the plugin shortly here.
+Local plugin used for 3 types of notifications
 
-TODO Provide more detailed description here.
+1. Resend of confrimation request.
+2. Selected date notifications
+3. Enrollment reminder
 
 ## Installing via uploaded ZIP file ##
 

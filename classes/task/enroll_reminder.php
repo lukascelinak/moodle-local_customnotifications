@@ -18,8 +18,8 @@
  * The Custom notifications Enroll reminder task class.
  *
  * @package    local_customnotifications
- * @category   admin
- * @copyright  Lukas Celinak, Edumood s.r.o., Slovakia
+ * @category   task
+ * @copyright  Lukas Celinak, Edumood, Slovakia
  * @auther     2021 Lukas Celinak <lukascelinak@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -53,6 +53,7 @@ class enroll_reminder extends \core\task\scheduled_task
     {
         global $DB, $CFG;
         // First notification after N minutes
+        $supportuser = \core_user::get_support_user();
         $settings=get_config('local_customnotifications');
         $sql = "SELECT u.* FROM {user} u 
                     LEFT JOIN {user_enrolments} ue ON u.id = ue.userid 
@@ -69,40 +70,37 @@ class enroll_reminder extends \core\task\scheduled_task
 
         $params = ['enroll_delayduration' => $settings->enroll_delayduration];
         $users = $DB->get_records_sql($sql, $params);
+        $course = $DB->get_record('course',array('id'=>$settings->enroll_courses));
 
         foreach ($users as $user) {
             $user->fullname=fullname($user);
+            $user->coursename=$course->fullname;
             if ($settings->enroll_recipient>1) {
-                $message= new message_template($user,
-                    new \lang_string('enroll_subject','local_customnotifications',$user),
-                    new \lang_string('enroll_subject','local_customnotifications',$user));
+                $messageadm= new message_template($user,
+                    new \lang_string('enroll_message_subject','local_customnotifications',$user),
+                    new \lang_string('enroll_message_message','local_customnotifications',$user), '',$settings->footer);
 
-                $message->set_button(new \moodle_url('/user/profile.php',array('id'=>$user->id)),fullname($user));
-                $htmlmail=$message->out();
-                $plainmail= strip_tags($htmlmail);
+                $messageadm->set_button(new \moodle_url('/user/profile.php',array('id'=>$user->id)),fullname($user));
+                $htmlmailadm=$messageadm->out();
+                $plainmailadm= strip_tags($htmlmailadm);
                 $copyuser = $DB->get_record('user', array('id' => $settings->confirmation_recipient));
-                email_to_user($copyuser, null,
-                    new \lang_string('enroll_subject','local_customnotifications',$user),
-                    $plainmail, $htmlmail);
+                email_to_user($copyuser, $supportuser,
+                    $messageadm->get_subject(),
+                    $plainmailadm, $htmlmailadm);
             }
             $message= new message_template($user,
                 new \lang_string('enroll_reminder','local_customnotifications',$user),
-                $settings->courtdate_smessage, $settings->footer);
-            $course = $DB->get_record('course',array('id'=>$settings->enroll_courses));
+                $settings->enroll_message, $settings->footer);
 
             $message->set_button(new \moodle_url('/course/view.php',array('id'=>$course->id)),get_string('enroll_proceed','local_customnotifications',$course->fullname));
             $htmlmail=$message->out();
             $plainmail= strip_tags($htmlmail);
 
-            email_to_user($user, null, $message->get_subject(), $plainmail, $htmlmail);
-
+            email_to_user($user, $supportuser, $message->get_subject(), $plainmail, $htmlmail);
             $event = reminder_sent::create(array('objectid' => $user->id,
                 'context' => \context_user::instance($user->id), 'relateduserid' => $user->id, 'other' => "enroll_reminder"));
             $event->trigger();
         }
-
     }
-
-
 }
 

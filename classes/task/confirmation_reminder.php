@@ -18,8 +18,8 @@
  * The Custom notifications Confirmation reminder task class.
  *
  * @package    local_customnotifications
- * @category   admin
- * @copyright  Lukas Celinak, Edumood s.r.o., Slovakia
+ * @category   task
+ * @copyright  Lukas Celinak, Edumood, Slovakia
  * @auther     2021 Lukas Celinak <lukascelinak@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -53,6 +53,7 @@ class confirmation_reminder extends \core\task\scheduled_task
         global $DB, $CFG;
         // First notification after N minutes
         $settings=get_config('local_customnotifications');
+        $supportuser = \core_user::get_support_user();
         $sql = "SELECT u.* FROM {user} u 
                     LEFT JOIN {logstore_standard_log} l ON l.relateduserid = u.id 
                                AND l.component = \"local_customnotifications\" 
@@ -68,14 +69,15 @@ class confirmation_reminder extends \core\task\scheduled_task
             if ($settings->confirmation_recipient>1) {
                 $message= new message_template($user,
                     new \lang_string('confirmation_subject','local_customnotifications',$user),
-                    new \lang_string('confirmation_message','local_customnotifications',$user));
+                    new \lang_string('confirmation_message','local_customnotifications',$user),
+                    '',$settings->footer);
 
                 $message->set_button(new \moodle_url('/user/profile.php',array('id'=>$user->id)),fullname($user));
                 $htmlmail=$message->out();
                 $plainmail= strip_tags($htmlmail);
                 $copyuser = $DB->get_record('user', array('id' => $settings->confirmation_recipient));
-                email_to_user($copyuser, null,
-                    new \lang_string('confirmation_subject','local_customnotifications',$user),
+                email_to_user($copyuser, $supportuser,
+                    $message->get_subject(),
                     $plainmail, $htmlmail);
             }
             $user = get_complete_user_data('email', $user->email, null, true);

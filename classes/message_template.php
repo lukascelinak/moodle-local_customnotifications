@@ -18,8 +18,8 @@
  * The template for reminder notification message class.
  *
  * @package    local_customnotifications
- * @category   admin
- * @copyright  Lukas Celinak, Edumood s.r.o., Slovakia
+ * @category   class
+ * @copyright  Lukas Celinak, Edumood, Slovakia
  * @auther     2021 Lukas Celinak <lukascelinak@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -52,7 +52,21 @@ class message_template {
     }
 
     public function set_button($url,$label){
-        $this->button= "<a href=\"{$url}\">{$label}</a>";
+        $this->button= "<a href=\"{$url}\" style=\"box-sizing: border-box;
+                  background-color: #3498db;
+                  border-color: #3498db;
+                  color: #ffffff;
+                  border: solid 1px #3498db;
+                  border-radius: 5px;
+                  box-sizing: border-box;
+                  cursor: pointer;
+                  display: inline-block;
+                  font-size: 14px;
+                  font-weight: bold;
+                  margin: 0;
+                  padding: 12px 25px;
+                  text-decoration: none;
+                  text-transform: capitalize\">{$label}</a>";
 
     }
 
