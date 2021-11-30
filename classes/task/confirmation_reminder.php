@@ -58,7 +58,7 @@ class confirmation_reminder extends \core\task\scheduled_task
                     LEFT JOIN {logstore_standard_log} l ON l.relateduserid = u.id 
                                AND l.component = \"local_customnotifications\" 
                                AND l.other LIKE \"%confirmation_reminder%\" 
-                    WHERE u.auth LIKE 'email' AND u.suspended = 0 AND u.deleted = 0 
+                    WHERE u.auth LIKE 'email' AND u.suspended = 0 AND u.deleted = 0 AND u.confirmed = 0
                           AND l.id IS NULL AND UNIX_TIMESTAMP() > u.timecreated+:confirmation_delayduration ";
 
         $params = ['confirmation_delayduration' => $settings->confirmation_delayduration];

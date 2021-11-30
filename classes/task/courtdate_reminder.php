@@ -77,9 +77,14 @@ class courtdate_reminder extends \core\task\scheduled_task
                       AND UNIX_TIMESTAMP()  > 
                       (SELECT uid.data 
                        FROM {user_info_data} uid 
-                       WHERE uid.fieldid=:fieldid AND uid.userid=u.id)-:timebefore ";
+                       WHERE uid.fieldid=:fieldid1 AND uid.userid=u.id)-:timebefore AND  UNIX_TIMESTAMP() < (SELECT uid.data 
+                       FROM {user_info_data} uid 
+                       WHERE uid.fieldid=:fieldid2 AND uid.userid=u.id) - :timebefores 
+                      AND UNIX_TIMESTAMP() < (SELECT uid.data 
+                          FROM {user_info_data} uid 
+                          WHERE uid.fieldid=:fieldid3 AND uid.userid=u.id) ";
 
-            $firstparams = ['courseid' => $course->id,'fieldid'=>$settings->fieldid,'timebefore'=>$settings->courtdate_fbefore];
+            $firstparams = ['courseid' => $course->id,'fieldid1'=>$settings->fieldid,'fieldid2'=>$settings->fieldid,'fieldid3'=>$settings->fieldid,'timebefore'=>$settings->courtdate_fbefore,'timebefores'=>$settings->courtdate_sbefore];
             $paramsfirst = array_merge($firstparams, $relatedctxparams);
             $usersfirst = $DB->get_records_sql($sqlfirst, $paramsfirst);
 
@@ -119,7 +124,7 @@ class courtdate_reminder extends \core\task\scheduled_task
                     LEFT JOIN {user_enrolments} ue ON ue.userid = u.id 
                     LEFT JOIN {enrol} e ON e.id = ue.enrolid 
                     LEFT JOIN {logstore_standard_log} l ON l.relateduserid = ue.userid 
-                               AND l.other LIKE \"%courtdate_reminder_first%\"
+                               AND l.other LIKE \"%courtdate_reminder_second%\"
                      JOIN (
                             SELECT DISTINCT ra.userid
                             FROM {role_assignments} ra
@@ -131,15 +136,19 @@ class courtdate_reminder extends \core\task\scheduled_task
                       AND UNIX_TIMESTAMP() > 
                           (SELECT uid.data 
                           FROM {user_info_data} uid 
-                          WHERE uid.fieldid=:fieldid AND uid.userid=u.id)-:timebefore ";
+                          WHERE uid.fieldid=:fieldid1 AND uid.userid=u.id)-:timebefore 
+                          AND UNIX_TIMESTAMP() < (SELECT uid.data 
+                          FROM {user_info_data} uid 
+                          WHERE uid.fieldid=:fieldid2 AND uid.userid=u.id) ";
 
-            $secparams = ['courseid' => $course->id,'fieldid'=>$settings->fieldid,'timebefore'=>$settings->courtdate_sbefore];
+            $secparams = ['courseid' => $course->id,'fieldid1'=>$settings->fieldid,'fieldid2'=>$settings->fieldid,'timebefore'=>$settings->courtdate_sbefore];
             $secparams = array_merge($secparams, $relatedctxparams);
             $userssecond = $DB->get_records_sql($sqlfirst, $secparams);
 
             foreach ($userssecond as $user) {
                 $courtdate=$DB->get_field('user_info_data','data',array('fieldid'=>$settings->fieldid,'userid'=>$user->id));
                 $user->courtdate=userdate($courtdate,'%d.%m.%Y');
+                $user->fullname=fullname($user);
                 if ($settings->courtdate_recipient>1) {
                     $messageadm= new message_template($user,
                         new \lang_string('courtdate_second_subject','local_customnotifications',$user),
