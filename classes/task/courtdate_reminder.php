@@ -97,10 +97,6 @@ class courtdate_reminder extends \core\task\scheduled_task
                 'timebefore'=>$settings->courtdate_fbefore];
             $paramsfirst = array_merge($firstparams, $relatedctxparams);
             $usersfirst = $DB->get_records_sql($sqlfirst, $paramsfirst);
-            echo $sqlfirst;
-            print_r($firstparams);
-            print_r($relatedctxparams);
-            print_r($usersfirst);
             foreach ($usersfirst as $user) {
                 $courtdate=$DB->get_field('user_info_data','data',array('fieldid'=>$settings->fieldid,'userid'=>$user->id));
                 $user->courtdate=userdate($courtdate,'%d.%m.%Y');
