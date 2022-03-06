@@ -83,13 +83,13 @@ class enroll_reminder extends \core\task\scheduled_task
                 $messageadm->set_button(new \moodle_url('/user/profile.php',array('id'=>$user->id)),fullname($user));
                 $htmlmailadm=$messageadm->out();
                 $plainmailadm= strip_tags($htmlmailadm);
-                $copyuser = $DB->get_record('user', array('id' => $settings->confirmation_recipient));
+                $copyuser = $DB->get_record('user', array('id' => $settings->enroll_recipient));
                 email_to_user($copyuser, $supportuser,
                     $messageadm->get_subject(),
                     $plainmailadm, $htmlmailadm);
             }
             $message= new message_template($user,
-                new \lang_string('enroll_reminder','local_customnotifications',$user),
+                $settings->enroll_subject,
                 $settings->enroll_message, $settings->footer);
 
             $message->set_button(new \moodle_url('/course/view.php',array('id'=>$course->id)),get_string('enroll_proceed','local_customnotifications',$course->fullname));

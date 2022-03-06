@@ -28,8 +28,8 @@ $tasks = [
     [
         'classname' => 'local_customnotifications\task\courtdate_reminder',
         'blocking' => 0,
-        'minute' => '*',
-        'hour' => '*',
+        'minute' => '0',
+        'hour' => '8',
         'day' => '*',
         'month' => '*',
         'dayofweek' => '*',

@@ -41,8 +41,8 @@ if ($hassiteconfig) {
         foreach ($users as $user) {
             $userselect[$user->id] = fullname($user);
         }
-
-        $extrafields = $DB->get_records('user_info_field',array('datatype'=>'datetime'));
+        
+        $extrafields = $DB->get_records('user_info_field');
         $extrafieldsarray = [];
         foreach ($extrafields as $field) {
             $extrafieldsarray[$field->id] = $field->name;

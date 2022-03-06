@@ -64,8 +64,11 @@ class courtdate_reminder extends \core\task\scheduled_task
             $sqlfirst = "SELECT u.* FROM {user} u 
                     LEFT JOIN {user_enrolments} ue ON ue.userid = u.id 
                     LEFT JOIN {enrol} e ON e.id = ue.enrolid 
+                    LEFT JOIN {course_completions} cc ON cc.userid = u.id AND cc.course=:courseid2
                     LEFT JOIN {logstore_standard_log} l ON l.relateduserid = ue.userid 
-                               AND l.other LIKE \"%courtdate_reminder_first%\"
+                               AND l.other LIKE CONCAT('\"',\"courtdate_reminder_first_\",(SELECT uid.data 
+                       FROM {user_info_data} uid 
+                       WHERE uid.fieldid=:fieldid4 AND uid.userid=u.id),'\"')
                      JOIN (
                             SELECT DISTINCT ra.userid
                             FROM {role_assignments} ra
@@ -73,21 +76,31 @@ class courtdate_reminder extends \core\task\scheduled_task
                             AND ra.contextid {$relatedctxsql}
                        ) rainner ON rainner.userid = u.id 
 
-                    WHERE e.courseid=:courseid AND ue.status = 0 AND l.id IS NULL 
-                      AND UNIX_TIMESTAMP()  > 
-                      (SELECT uid.data 
+                    WHERE ue.id IS NOT NULL 
+                      AND e.courseid=:courseid 
+                      AND ue.status = 0 
+                      AND l.id IS NULL 
+                      AND cc.timecompleted IS NULL 
+                      AND FROM_UNIXTIME(UNIX_TIMESTAMP(),\"%Y-%m-%d\") = 
+                      FROM_UNIXTIME(UNIX_TIMESTAMP(STR_TO_DATE(
+                    (SELECT uid.data 
                        FROM {user_info_data} uid 
-                       WHERE uid.fieldid=:fieldid1 AND uid.userid=u.id)-:timebefore AND  UNIX_TIMESTAMP() < (SELECT uid.data 
-                       FROM {user_info_data} uid 
-                       WHERE uid.fieldid=:fieldid2 AND uid.userid=u.id) - :timebefores 
-                      AND UNIX_TIMESTAMP() < (SELECT uid.data 
-                          FROM {user_info_data} uid 
-                          WHERE uid.fieldid=:fieldid3 AND uid.userid=u.id) ";
+                       WHERE uid.fieldid=:fieldid1 AND uid.userid=u.id),\"%m-%d-%Y\"
+                          ))-:timebefore,\"%Y-%m-%d\") ";
 
-            $firstparams = ['courseid' => $course->id,'fieldid1'=>$settings->fieldid,'fieldid2'=>$settings->fieldid,'fieldid3'=>$settings->fieldid,'timebefore'=>$settings->courtdate_fbefore,'timebefores'=>$settings->courtdate_sbefore];
+            $firstparams = ['courseid' => $course->id,
+                'courseid2' => $course->id,
+                'fieldid1'=>$settings->fieldid,
+                'fieldid2'=>$settings->fieldid,
+                'fieldid3'=>$settings->fieldid,
+                'fieldid4'=>$settings->fieldid,
+                'timebefore'=>$settings->courtdate_fbefore];
             $paramsfirst = array_merge($firstparams, $relatedctxparams);
             $usersfirst = $DB->get_records_sql($sqlfirst, $paramsfirst);
-
+            echo $sqlfirst;
+            print_r($firstparams);
+            print_r($relatedctxparams);
+            print_r($usersfirst);
             foreach ($usersfirst as $user) {
                 $courtdate=$DB->get_field('user_info_data','data',array('fieldid'=>$settings->fieldid,'userid'=>$user->id));
                 $user->courtdate=userdate($courtdate,'%d.%m.%Y');
@@ -115,16 +128,22 @@ class courtdate_reminder extends \core\task\scheduled_task
                 $plainmail= strip_tags($htmlmail);
                 email_to_user($user, $supportuser, $message->get_subject(), $plainmail, $htmlmail);
                 $event = reminder_sent::create(array('objectid' => $user->id,
-                    'context' => \context_user::instance($user->id), 'relateduserid' => $user->id, 'other' => "courtdate_reminder_first"));
+                    'context' => \context_user::instance($user->id),
+                    'relateduserid' => $user->id,
+                    'other' => "courtdate_reminder_first_".$courtdate));
                 $event->trigger();
             }
 
             // Second notification courtdate_fbefore days before court date
-            $sqlfirst = "SELECT u.* FROM {user} u 
+            $sqlsecond = "SELECT u.* FROM {user} u 
                     LEFT JOIN {user_enrolments} ue ON ue.userid = u.id 
                     LEFT JOIN {enrol} e ON e.id = ue.enrolid 
+                    LEFT JOIN {course_completions} cc ON cc.userid = u.id AND cc.course=:courseid2
                     LEFT JOIN {logstore_standard_log} l ON l.relateduserid = ue.userid 
-                               AND l.other LIKE \"%courtdate_reminder_second%\"
+                               AND l.other LIKE CONCAT('\"',\"courtdate_reminder_second_\",
+                                (SELECT uid.data 
+                                 FROM {user_info_data} uid 
+                                 WHERE uid.fieldid=:fieldid4 AND uid.userid=u.id),'\"')
                      JOIN (
                             SELECT DISTINCT ra.userid
                             FROM {role_assignments} ra
@@ -132,19 +151,25 @@ class courtdate_reminder extends \core\task\scheduled_task
                             AND ra.contextid {$relatedctxsql}
                        ) rainner ON rainner.userid = u.id 
 
-                    WHERE e.courseid=:courseid AND ue.status = 0 AND l.id IS NULL 
-                      AND UNIX_TIMESTAMP() > 
-                          (SELECT uid.data 
-                          FROM {user_info_data} uid 
-                          WHERE uid.fieldid=:fieldid1 AND uid.userid=u.id)-:timebefore 
-                          AND UNIX_TIMESTAMP() < (SELECT uid.data 
-                          FROM {user_info_data} uid 
-                          WHERE uid.fieldid=:fieldid2 AND uid.userid=u.id) ";
+                    WHERE e.courseid=:courseid 
+                      AND ue.status = 0 
+                      AND l.id IS NULL 
+                      AND cc.timecompleted IS NULL
+                      AND FROM_UNIXTIME(UNIX_TIMESTAMP(),\"%Y-%m-%d\") = 
+                    FROM_UNIXTIME(UNIX_TIMESTAMP(STR_TO_DATE(
+                    (SELECT uid.data 
+                       FROM {user_info_data} uid 
+                       WHERE uid.fieldid=:fieldid1 AND uid.userid=u.id),\"%m-%d-%Y\"
+                          ))-:timebefore,\"%Y-%m-%d\") ";
 
-            $secparams = ['courseid' => $course->id,'fieldid1'=>$settings->fieldid,'fieldid2'=>$settings->fieldid,'timebefore'=>$settings->courtdate_sbefore];
+            $secparams = ['courseid' => $course->id,
+                'courseid2' => $course->id,
+                'fieldid1'=>$settings->fieldid,
+                'fieldid2'=>$settings->fieldid,
+                'fieldid4'=>$settings->fieldid,
+                'timebefore'=>$settings->courtdate_sbefore];
             $secparams = array_merge($secparams, $relatedctxparams);
-            $userssecond = $DB->get_records_sql($sqlfirst, $secparams);
-
+            $userssecond = $DB->get_records_sql($sqlsecond, $secparams);
             foreach ($userssecond as $user) {
                 $courtdate=$DB->get_field('user_info_data','data',array('fieldid'=>$settings->fieldid,'userid'=>$user->id));
                 $user->courtdate=userdate($courtdate,'%d.%m.%Y');
@@ -176,7 +201,9 @@ class courtdate_reminder extends \core\task\scheduled_task
                 $plainmail= strip_tags($htmlmail);
                 email_to_user($user, $supportuser, $smessage->get_subject(), $plainmail, $htmlmail);
                 $event = reminder_sent::create(array('objectid' => $user->id,
-                    'context' => \context_user::instance($user->id), 'relateduserid' => $user->id, 'other' => "courtdate_reminder_second"));
+                    'context' => \context_user::instance($user->id),
+                    'relateduserid' => $user->id,
+                    'other' => "courtdate_reminder_second_".$courtdate));
                 $event->trigger();
             }
         }
