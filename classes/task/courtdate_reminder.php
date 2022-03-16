@@ -99,7 +99,7 @@ class courtdate_reminder extends \core\task\scheduled_task
             $usersfirst = $DB->get_records_sql($sqlfirst, $paramsfirst);
             foreach ($usersfirst as $user) {
                 $courtdate=$DB->get_field('user_info_data','data',array('fieldid'=>$settings->fieldid,'userid'=>$user->id));
-                $user->courtdate=userdate($courtdate,'%d.%m.%Y');
+                $user->courtdate=is_number($courtdate)?userdate($courtdate,'%d.%m.%Y'):$courtdate;
                 $user->fullname=fullname($user);
                 if ($settings->courtdate_recipient>1) {
                     $messageadm= new message_template($user,
@@ -168,7 +168,7 @@ class courtdate_reminder extends \core\task\scheduled_task
             $userssecond = $DB->get_records_sql($sqlsecond, $secparams);
             foreach ($userssecond as $user) {
                 $courtdate=$DB->get_field('user_info_data','data',array('fieldid'=>$settings->fieldid,'userid'=>$user->id));
-                $user->courtdate=userdate($courtdate,'%d.%m.%Y');
+                $user->courtdate=is_number($courtdate)?userdate($courtdate,'%d.%m.%Y'):$courtdate;
                 $user->fullname=fullname($user);
                 if ($settings->courtdate_recipient>1) {
                     $messageadm= new message_template($user,

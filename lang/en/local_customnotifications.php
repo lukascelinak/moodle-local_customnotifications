@@ -72,14 +72,14 @@ $string['enroll_recipient'] = 'Send copy of enrollment reminder message to';
 $string['enroll_recipient_help'] = 'Notify admin user about unenroled users';
 $string['enroll_courses'] = 'Select course';
 $string['enroll_courses_help'] = 'Select course for enrollment link in message';
-$string['enroll_proceed'] = 'Proceed to enrol in to the course {$a}';
+$string['enroll_proceed'] = 'Proceed to enroll in {$a}';
 
-$string['confirmation_reminder'] = 'Confirmation reminder';
-$string['confirmation_reminder_help'] = 'Manage Confirmation reminder notifications';
+$string['confirmation_reminder'] = 'Account Confirmation Reminder';
+$string['confirmation_reminder_help'] = 'Manage Account Confirmation Reminder notifications';
 $string['confirmation_delayduration'] = 'Delay duration after account confirmation';
 $string['confirmation_delayduration_help'] = 'Delay duration after account confirmation';
 $string['confirmation_recipient'] = 'Notify admin user about uncorfimed account';
 $string['confirmation_recipient_help'] = 'Notify admin user about uncorfimed account';
-$string['confirmation_subject'] = 'New Account Not Confirmed - {$a->fullname}';
-$string['confirmation_message'] = 'The confirmation email was resended to user {$a->fullname},{$a->username}, {$a->email}, 
-                                   which has not yet confirmed his account on moodle.';
+$string['confirmation_subject'] = 'New account was not confirmed - {$a->fullname}';
+$string['confirmation_message'] = 'The Account Confirmation email was resent to user {$a->fullname},{$a->username}, {$a->email}, 
+                                   who has not confirmed his/her online account yet.';

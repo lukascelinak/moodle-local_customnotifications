@@ -29,6 +29,6 @@ defined('MOODLE_INTERNAL') || die();
 /** @var object $plugin */
 $plugin->component = 'local_customnotifications';
 $plugin->release = '1.0.0';
-$plugin->version = 2022030600;
+$plugin->version = 2022030601;
 $plugin->requires = 2021051700;
 $plugin->maturity = MATURITY_STABLE;
